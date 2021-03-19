@@ -1,0 +1,18 @@
+type Note {
+    name: String!
+    steps: [Step!]
+}
+
+type Step {
+    title: String!
+    txt: String!
+    url: String
+}
+
+type Query {
+  notes: [Note!]!
+}
+
+
+
+
