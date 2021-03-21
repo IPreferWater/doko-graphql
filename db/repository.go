@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/ipreferwater/graphql-theory/graph/model"
+	"github.com/ipreferwater/graphql-theory/model"
 )
 
 type NoteRepositoryInterface interface {

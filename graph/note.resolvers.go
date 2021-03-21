@@ -8,11 +8,11 @@ import (
 
 	"github.com/ipreferwater/graphql-theory/db"
 	"github.com/ipreferwater/graphql-theory/graph/generated"
-	"github.com/ipreferwater/graphql-theory/graph/model"
+	model1 "github.com/ipreferwater/graphql-theory/model"
 	log "github.com/sirupsen/logrus"
 )
 
-func (r *queryResolver) Notes(ctx context.Context) ([]*model.Note, error) {
+func (r *queryResolver) Notes(ctx context.Context) ([]*model1.Note, error) {
 	log.Info("query notes")
 	return db.NoteRepository.GetNotes()
 }

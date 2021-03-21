@@ -3,7 +3,7 @@ package db
 import (
 	"fmt"
 
-	"github.com/ipreferwater/graphql-theory/graph/model"
+	"github.com/ipreferwater/graphql-theory/model"
 )
 
 var (
@@ -18,7 +18,7 @@ func (n TODONoteRepository) GetNotes() ([]*model.Note, error) {
 	var arrNotes []*model.Note
 	for i := 0; i < 10; i++ {
 
-		var arrSteps []*model.Step
+		var arrSteps []model.Step
 		for j := 0; j < 5; j++ {
 			step := model.Step{
 				Title: fmt.Sprintf("title-%d", j),
@@ -27,10 +27,10 @@ func (n TODONoteRepository) GetNotes() ([]*model.Note, error) {
 
 			if j == 3 {
 				urlString := fmt.Sprintf("url-%d", j)
-				step.URL = &urlString
+				step.Url = &urlString
 			}
 
-			arrSteps = append(arrSteps, &step)
+			arrSteps = append(arrSteps, step)
 		}
 		arrNotes = append(arrNotes, &model.Note{
 			Name:  fmt.Sprintf("notes-%d", i),
