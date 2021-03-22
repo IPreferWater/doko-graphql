@@ -13,6 +13,17 @@ type Query {
   notes: [Note!]!
 }
 
+input NewNote {
+    name: String!
+    steps: [NewStep!]
+}
 
+input NewStep {
+    title: String!
+    txt: String!
+    url: String
+}
 
-
+type Mutation {
+ createNote(input: NewNote!): String!
+}

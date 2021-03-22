@@ -1,13 +1,14 @@
 package db
 
 import (
-	"fmt"
-
+	//"github.com/ipreferwater/graphql-theory/model"
 	"github.com/ipreferwater/graphql-theory/model"
 )
 
 var (
 	NoteRepository NoteRepositoryInterface
+
+	allNotes []*model.Note
 )
 
 type TODONoteRepository struct {
@@ -15,7 +16,8 @@ type TODONoteRepository struct {
 
 func (n TODONoteRepository) GetNotes() ([]*model.Note, error) {
 
-	var arrNotes []*model.Note
+	return allNotes, nil
+	/*var arrNotes []*model.Note
 	for i := 0; i < 10; i++ {
 
 		var arrSteps []model.Step
@@ -37,7 +39,13 @@ func (n TODONoteRepository) GetNotes() ([]*model.Note, error) {
 			Steps: arrSteps,
 		})
 	}
-	return arrNotes, nil
+	return arrNotes, nil*/
+}
+
+func (n TODONoteRepository) CreateNote(newNote model.Note) error {
+
+	allNotes = append(allNotes, &newNote)
+	return nil
 }
 
 func InitTODORepo() {

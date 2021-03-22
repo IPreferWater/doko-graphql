@@ -6,4 +6,5 @@ import (
 
 type NoteRepositoryInterface interface {
 	GetNotes() ([]*model.Note, error)
+	CreateNote(model.Note) error
 }
