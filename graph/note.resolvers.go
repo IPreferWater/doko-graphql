@@ -14,7 +14,6 @@ import (
 )
 
 func (r *mutationResolver) CreateNote(ctx context.Context, input model.NewNote) (string, error) {
-
 	var newSteps []model1.Step
 	for _, newStep := range input.Steps {
 		mapedStep := model1.Step{
@@ -37,6 +36,11 @@ func (r *mutationResolver) CreateNote(ctx context.Context, input model.NewNote) 
 	}
 
 	return "done", nil
+}
+
+func (r *mutationResolver) DeleteNote(ctx context.Context, input int) (string, error) {
+	db.NoteRepository.DeleteNote(input)
+	return "delete", nil
 }
 
 func (r *queryResolver) Notes(ctx context.Context) ([]*model1.Note, error) {

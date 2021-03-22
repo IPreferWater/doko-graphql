@@ -26,4 +26,5 @@ input NewStep {
 
 type Mutation {
  createNote(input: NewNote!): String!
+ deleteNote(input: Int!): String!
 }

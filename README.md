@@ -17,6 +17,10 @@ mutation CreateNote($newnote: NewNote!) {
   createNote(input: $newnote)
 }
 
+mutation DeleteNote($id: Int!) {
+  deleteNote(input: $id)
+}
+
 query variables 
 
 {
@@ -37,8 +41,11 @@ query variables
         "txt": "txt-3"
       }
     ]
-  }
+  },
+  "id":1
 }
+
+
 
 ## TODO
 middleware : 
