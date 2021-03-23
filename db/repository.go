@@ -10,3 +10,10 @@ type NoteRepositoryInterface interface {
 	UpdateNote(model.Note) error
 	DeleteNote(int) error
 }
+
+type PostRepositoryInterface interface {
+	GetPosts() ([]model.Post, error)
+	CreatePosts([]model.Post) error
+	UpdatePosts([]model.Post) error
+	DeletePosts([]int) error
+}

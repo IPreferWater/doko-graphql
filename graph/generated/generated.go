@@ -44,9 +44,19 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	GetPosts struct {
+		Posts func(childComplexity int) int
+	}
+
+	Gps struct {
+		X func(childComplexity int) int
+		Y func(childComplexity int) int
+	}
+
 	Mutation struct {
-		CreateNote func(childComplexity int, input model.NewNote) int
-		DeleteNote func(childComplexity int, input int) int
+		CreateNote  func(childComplexity int, input model.NewNote) int
+		CreatePosts func(childComplexity int, input model1.InputPost) int
+		DeleteNote  func(childComplexity int, input int) int
 	}
 
 	Note struct {
@@ -54,8 +64,15 @@ type ComplexityRoot struct {
 		Steps func(childComplexity int) int
 	}
 
+	Post struct {
+		Gps   func(childComplexity int) int
+		Title func(childComplexity int) int
+		Txt   func(childComplexity int) int
+	}
+
 	Query struct {
 		Notes func(childComplexity int) int
+		Posts func(childComplexity int) int
 	}
 
 	Step struct {
@@ -68,9 +85,11 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateNote(ctx context.Context, input model.NewNote) (string, error)
 	DeleteNote(ctx context.Context, input int) (string, error)
+	CreatePosts(ctx context.Context, input model1.InputPost) (string, error)
 }
 type QueryResolver interface {
 	Notes(ctx context.Context) ([]*model1.Note, error)
+	Posts(ctx context.Context) (*model1.GetPosts, error)
 }
 
 type executableSchema struct {
@@ -88,6 +107,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "GetPosts.posts":
+		if e.complexity.GetPosts.Posts == nil {
+			break
+		}
+
+		return e.complexity.GetPosts.Posts(childComplexity), true
+
+	case "Gps.x":
+		if e.complexity.Gps.X == nil {
+			break
+		}
+
+		return e.complexity.Gps.X(childComplexity), true
+
+	case "Gps.y":
+		if e.complexity.Gps.Y == nil {
+			break
+		}
+
+		return e.complexity.Gps.Y(childComplexity), true
+
 	case "Mutation.createNote":
 		if e.complexity.Mutation.CreateNote == nil {
 			break
@@ -99,6 +139,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateNote(childComplexity, args["input"].(model.NewNote)), true
+
+	case "Mutation.createPosts":
+		if e.complexity.Mutation.CreatePosts == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createPosts_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreatePosts(childComplexity, args["input"].(model1.InputPost)), true
 
 	case "Mutation.deleteNote":
 		if e.complexity.Mutation.DeleteNote == nil {
@@ -126,12 +178,40 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Note.Steps(childComplexity), true
 
+	case "Post.gps":
+		if e.complexity.Post.Gps == nil {
+			break
+		}
+
+		return e.complexity.Post.Gps(childComplexity), true
+
+	case "Post.title":
+		if e.complexity.Post.Title == nil {
+			break
+		}
+
+		return e.complexity.Post.Title(childComplexity), true
+
+	case "Post.txt":
+		if e.complexity.Post.Txt == nil {
+			break
+		}
+
+		return e.complexity.Post.Txt(childComplexity), true
+
 	case "Query.notes":
 		if e.complexity.Query.Notes == nil {
 			break
 		}
 
 		return e.complexity.Query.Notes(childComplexity), true
+
+	case "Query.posts":
+		if e.complexity.Query.Posts == nil {
+			break
+		}
+
+		return e.complexity.Query.Posts(childComplexity), true
 
 	case "Step.title":
 		if e.complexity.Step.Title == nil {
@@ -218,6 +298,34 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "graph/gps.graphqls", Input: `type GetPosts {
+	posts:    [Post!]!
+}
+
+type Post {
+    title: String!
+    txt: String
+    gps : Gps!
+}
+
+type Gps {
+    x: Float!
+    y: Float!
+}
+
+input InputPost {
+    title: String!
+    txt: String
+}
+
+
+extend type Query {
+  posts: GetPosts!
+}
+
+extend type Mutation {
+ createPosts(input: InputPost!): String!
+}`, BuiltIn: false},
 	{Name: "graph/note.graphqls", Input: `type Note {
     name: String!
     steps: [Step!]
@@ -262,6 +370,21 @@ func (ec *executionContext) field_Mutation_createNote_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNewNote2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋgraphᚋmodelᚐNewNote(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createPosts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model1.InputPost
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNInputPost2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPost(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -337,6 +460,111 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _GetPosts_posts(ctx context.Context, field graphql.CollectedField, obj *model1.GetPosts) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "GetPosts",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Posts, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]model1.Post)
+	fc.Result = res
+	return ec.marshalNPost2ᚕgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐPostᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Gps_x(ctx context.Context, field graphql.CollectedField, obj *model1.Gps) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Gps",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.X, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Gps_y(ctx context.Context, field graphql.CollectedField, obj *model1.Gps) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Gps",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Y, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
 
 func (ec *executionContext) _Mutation_createNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
@@ -422,6 +650,48 @@ func (ec *executionContext) _Mutation_deleteNote(ctx context.Context, field grap
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Mutation_createPosts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createPosts_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreatePosts(rctx, args["input"].(model1.InputPost))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Note_name(ctx context.Context, field graphql.CollectedField, obj *model1.Note) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -489,6 +759,108 @@ func (ec *executionContext) _Note_steps(ctx context.Context, field graphql.Colle
 	return ec.marshalOStep2ᚕgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐStepᚄ(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Post_title(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Title, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Post_txt(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Txt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Post_gps(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Gps, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(model1.Gps)
+	fc.Result = res
+	return ec.marshalNGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGps(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Query_notes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -522,6 +894,41 @@ func (ec *executionContext) _Query_notes(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*model1.Note)
 	fc.Result = res
 	return ec.marshalNNote2ᚕᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐNoteᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_posts(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Posts(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model1.GetPosts)
+	fc.Result = res
+	return ec.marshalNGetPosts2ᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGetPosts(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1784,6 +2191,34 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj interface{}) (model1.InputPost, error) {
+	var it model1.InputPost
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "title":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("title"))
+			it.Title, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "txt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txt"))
+			it.Txt, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewNote(ctx context.Context, obj interface{}) (model.NewNote, error) {
 	var it model.NewNote
 	var asMap = obj.(map[string]interface{})
@@ -1856,6 +2291,65 @@ func (ec *executionContext) unmarshalInputNewStep(ctx context.Context, obj inter
 
 // region    **************************** object.gotpl ****************************
 
+var getPostsImplementors = []string{"GetPosts"}
+
+func (ec *executionContext) _GetPosts(ctx context.Context, sel ast.SelectionSet, obj *model1.GetPosts) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, getPostsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("GetPosts")
+		case "posts":
+			out.Values[i] = ec._GetPosts_posts(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var gpsImplementors = []string{"Gps"}
+
+func (ec *executionContext) _Gps(ctx context.Context, sel ast.SelectionSet, obj *model1.Gps) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, gpsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Gps")
+		case "x":
+			out.Values[i] = ec._Gps_x(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "y":
+			out.Values[i] = ec._Gps_y(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -1878,6 +2372,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "deleteNote":
 			out.Values[i] = ec._Mutation_deleteNote(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createPosts":
+			out.Values[i] = ec._Mutation_createPosts(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -1921,6 +2420,40 @@ func (ec *executionContext) _Note(ctx context.Context, sel ast.SelectionSet, obj
 	return out
 }
 
+var postImplementors = []string{"Post"}
+
+func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj *model1.Post) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, postImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Post")
+		case "title":
+			out.Values[i] = ec._Post_title(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "txt":
+			out.Values[i] = ec._Post_txt(ctx, field, obj)
+		case "gps":
+			out.Values[i] = ec._Post_gps(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var queryImplementors = []string{"Query"}
 
 func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -1945,6 +2478,20 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_notes(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "posts":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_posts(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -2259,6 +2806,44 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloat(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloat(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) marshalNGetPosts2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGetPosts(ctx context.Context, sel ast.SelectionSet, v model1.GetPosts) graphql.Marshaler {
+	return ec._GetPosts(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNGetPosts2ᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGetPosts(ctx context.Context, sel ast.SelectionSet, v *model1.GetPosts) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._GetPosts(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGps(ctx context.Context, sel ast.SelectionSet, v model1.Gps) graphql.Marshaler {
+	return ec._Gps(ctx, sel, &v)
+}
+
+func (ec *executionContext) unmarshalNInputPost2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPost(ctx context.Context, v interface{}) (model1.InputPost, error) {
+	res, err := ec.unmarshalInputInputPost(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -2329,6 +2914,47 @@ func (ec *executionContext) marshalNNote2ᚖgithubᚗcomᚋipreferwaterᚋgraphq
 		return graphql.Null
 	}
 	return ec._Note(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPost2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐPost(ctx context.Context, sel ast.SelectionSet, v model1.Post) graphql.Marshaler {
+	return ec._Post(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPost2ᚕgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐPostᚄ(ctx context.Context, sel ast.SelectionSet, v []model1.Post) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNPost2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐPost(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) marshalNStep2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐStep(ctx context.Context, sel ast.SelectionSet, v model1.Step) graphql.Marshaler {
