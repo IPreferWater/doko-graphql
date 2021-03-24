@@ -17,6 +17,7 @@ func main() {
 	config.InitConfig()
 	logs.InitLogs()
 	db.InitTODORepo()
+	db.InitMysqlPostRepository()
 
 	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
 

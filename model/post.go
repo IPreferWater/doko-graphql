@@ -11,7 +11,7 @@ type NewPosts struct {
 type InputPost struct {
 	Title string    `json:"title"`
 	Txt   *string   `json:"txt"`
-	Gps   Gps `json:"gps"`
+	Gps   InputGps `json:"gps"`
 }
 
 type InputGps struct {

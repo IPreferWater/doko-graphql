@@ -13,7 +13,7 @@ type NoteRepositoryInterface interface {
 
 type PostRepositoryInterface interface {
 	GetPosts() ([]model.Post, error)
-	CreatePosts([]model.Post) error
+	CreatePosts([]*model.InputPost) error
 	UpdatePosts([]model.Post) error
 	DeletePosts([]int) error
 }

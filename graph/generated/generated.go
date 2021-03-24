@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateNote  func(childComplexity int, input model.NewNote) int
-		CreatePosts func(childComplexity int, input model1.InputPost) int
+		CreatePosts func(childComplexity int, input []*model1.InputPost) int
 		DeleteNote  func(childComplexity int, input int) int
 	}
 
@@ -85,7 +85,7 @@ type ComplexityRoot struct {
 type MutationResolver interface {
 	CreateNote(ctx context.Context, input model.NewNote) (string, error)
 	DeleteNote(ctx context.Context, input int) (string, error)
-	CreatePosts(ctx context.Context, input model1.InputPost) (string, error)
+	CreatePosts(ctx context.Context, input []*model1.InputPost) (string, error)
 }
 type QueryResolver interface {
 	Notes(ctx context.Context) ([]*model1.Note, error)
@@ -150,7 +150,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreatePosts(childComplexity, args["input"].(model1.InputPost)), true
+		return e.complexity.Mutation.CreatePosts(childComplexity, args["input"].([]*model1.InputPost)), true
 
 	case "Mutation.deleteNote":
 		if e.complexity.Mutation.DeleteNote == nil {
@@ -316,15 +316,20 @@ type Gps {
 input InputPost {
     title: String!
     txt: String
+    gps: InputGps!
 }
 
+input InputGps {
+    x: Float!
+    y: Float!
+}
 
 extend type Query {
   posts: GetPosts!
 }
 
 extend type Mutation {
- createPosts(input: InputPost!): String!
+ createPosts(input: [InputPost!]!): String!
 }`, BuiltIn: false},
 	{Name: "graph/note.graphqls", Input: `type Note {
     name: String!
@@ -381,10 +386,10 @@ func (ec *executionContext) field_Mutation_createNote_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_createPosts_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 model1.InputPost
+	var arg0 []*model1.InputPost
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNInputPost2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPost(ctx, tmp)
+		arg0, err = ec.unmarshalNInputPost2ᚕᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPostᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -675,7 +680,7 @@ func (ec *executionContext) _Mutation_createPosts(ctx context.Context, field gra
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreatePosts(rctx, args["input"].(model1.InputPost))
+		return ec.resolvers.Mutation().CreatePosts(rctx, args["input"].([]*model1.InputPost))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2191,6 +2196,34 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputInputGps(ctx context.Context, obj interface{}) (model1.InputGps, error) {
+	var it model1.InputGps
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "x":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("x"))
+			it.X, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "y":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("y"))
+			it.Y, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj interface{}) (model1.InputPost, error) {
 	var it model1.InputPost
 	var asMap = obj.(map[string]interface{})
@@ -2210,6 +2243,14 @@ func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj int
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txt"))
 			it.Txt, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "gps":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gps"))
+			it.Gps, err = ec.unmarshalNInputGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputGps(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2839,9 +2880,35 @@ func (ec *executionContext) marshalNGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑ
 	return ec._Gps(ctx, sel, &v)
 }
 
-func (ec *executionContext) unmarshalNInputPost2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPost(ctx context.Context, v interface{}) (model1.InputPost, error) {
-	res, err := ec.unmarshalInputInputPost(ctx, v)
+func (ec *executionContext) unmarshalNInputGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputGps(ctx context.Context, v interface{}) (model1.InputGps, error) {
+	res, err := ec.unmarshalInputInputGps(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNInputPost2ᚕᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPostᚄ(ctx context.Context, v interface{}) ([]*model1.InputPost, error) {
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]*model1.InputPost, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInputPost2ᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPost(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNInputPost2ᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPost(ctx context.Context, v interface{}) (*model1.InputPost, error) {
+	res, err := ec.unmarshalInputInputPost(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {

@@ -21,9 +21,32 @@ mutation DeleteNote($id: Int!) {
   deleteNote(input: $id)
 }
 
+query post {posts{posts{title,txt,gps{x,y}}}}
+
+ mutation CreatePosts($newposts: [InputPost!]!) {
+  createPosts(input: $newposts)
+}
+
 query variables 
 
 {
+  "newposts" : [
+    {
+      "title": "title1",
+      "txt": "ola",
+      "gps" : {
+        "x":1.111111,
+        "y":2.222222
+      }
+    },
+    {
+      "title": "title2",
+      "gps" : {
+        "x":3.111111,
+        "y":4.222222
+      }
+    }
+  ],
   "newnote": {
     "name": "random",
     "steps": [
@@ -41,10 +64,8 @@ query variables
         "txt": "txt-3"
       }
     ]
-  },
-  "id":1
+  }
 }
-
 
 
 ## TODO

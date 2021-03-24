@@ -16,13 +16,18 @@ type Gps {
 input InputPost {
     title: String!
     txt: String
+    gps: InputGps!
 }
 
+input InputGps {
+    x: Float!
+    y: Float!
+}
 
 extend type Query {
   posts: GetPosts!
 }
 
 extend type Mutation {
- createPosts(input: InputPost!): String!
+ createPosts(input: [InputPost!]!): String!
 }
