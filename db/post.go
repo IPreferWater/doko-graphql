@@ -1,7 +1,12 @@
 package db
 
 import (
+	"database/sql"
+	"time"
+
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/ipreferwater/graphql-theory/model"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -10,10 +15,39 @@ var (
 )
 
 type MysqlPostRepository struct {
+	client *sql.DB
 }
 
-func (n MysqlPostRepository) GetPosts() ([]model.Post, error) {
-	return allPosts, nil
+func (m MysqlPostRepository) GetPosts() ([]model.Post, error) {
+	q, err := m.client.Query("select * from posts  ORDER BY id DESC")
+
+	if err != nil {
+		log.Errorf("getPost query %s", err)
+		return nil, err
+	}
+	var res []model.Post
+
+	for q.Next() {
+		var id int
+		var title, txt string
+		var latitude, longitude float64
+		if err := q.Scan(&id, &title, &txt, &latitude, &longitude); err != nil {
+			log.Errorf("getPost scan %s", err)
+			return nil, err
+		}
+		scannedPost := model.Post{
+			ID:    id,
+			Title: title,
+			Txt:   &txt,
+			Gps: model.Gps{
+				X: latitude,
+				Y: longitude,
+			},
+		}
+		res = append(res, scannedPost)
+	}
+
+	return res, nil
 }
 
 func (n MysqlPostRepository) CreatePosts(newPosts []*model.InputPost) error {
@@ -41,5 +75,22 @@ func (n MysqlPostRepository) DeletePosts(idsPostToDelete []int) error {
 }
 
 func InitMysqlPostRepository() {
-	PostRepository = &MysqlPostRepository{}
+	db, err := sql.Open("mysql", "user:password@tcp(mysql:3306)/doko")
+	if err != nil {
+		panic(err)
+	}
+
+	if err := db.Ping(); err != nil {
+		log.Fatal("ping failed: ", err.Error)
+	}
+
+	log.Info("mysql connected")
+
+	// See "Important settings" section.
+	//TODO
+	db.SetConnMaxLifetime(time.Hour * 3)
+	db.SetMaxOpenConns(10)
+	db.SetMaxIdleConns(10)
+
+	PostRepository = &MysqlPostRepository{client: db}
 }

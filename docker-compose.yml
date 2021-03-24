@@ -7,4 +7,30 @@ services:
       context: ./
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "8000:8080"
+    networks:
+      - network-doko
+
+  mysql:
+    image: mysql:8.0.23
+    command: --default-authentication-plugin=mysql_native_password
+    env_file:
+      - ./mysql-dev.env
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    depends_on:
+      - "adminer"
+    networks:
+      - network-doko
+
+  adminer:
+    image: adminer
+    ports:
+      - 8001:8080
+    networks:
+      - network-doko
+
+networks:
+  network-doko:
