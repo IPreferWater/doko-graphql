@@ -74,6 +74,13 @@ func (n MysqlPostRepository) DeletePosts(idsPostToDelete []int) error {
 	return nil
 }
 
+func (m MysqlPostRepository) GetUserIdByUsernamePassword(userName string, password string) (int, error) {
+
+	var id int
+	m.client.QueryRow("SELECT id FROM users where username = ? AND password = ?", userName, password).Scan(&id)
+	return id, nil
+}
+
 func InitMysqlPostRepository() {
 	db, err := sql.Open("mysql", "user:password@tcp(mysql:3306)/doko")
 	if err != nil {

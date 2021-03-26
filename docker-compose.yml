@@ -8,6 +8,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8080"
+    depends_on:
+      - "mysql"
     networks:
       - network-doko
 

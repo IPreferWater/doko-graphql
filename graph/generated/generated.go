@@ -57,6 +57,7 @@ type ComplexityRoot struct {
 		CreateNote  func(childComplexity int, input model.NewNote) int
 		CreatePosts func(childComplexity int, input []*model1.InputPost) int
 		DeleteNote  func(childComplexity int, input int) int
+		Login       func(childComplexity int, input model.InputLogin) int
 	}
 
 	Note struct {
@@ -86,6 +87,7 @@ type MutationResolver interface {
 	CreateNote(ctx context.Context, input model.NewNote) (string, error)
 	DeleteNote(ctx context.Context, input int) (string, error)
 	CreatePosts(ctx context.Context, input []*model1.InputPost) (string, error)
+	Login(ctx context.Context, input model.InputLogin) (string, error)
 }
 type QueryResolver interface {
 	Notes(ctx context.Context) ([]*model1.Note, error)
@@ -163,6 +165,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteNote(childComplexity, args["input"].(int)), true
+
+	case "Mutation.login":
+		if e.complexity.Mutation.Login == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_login_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.InputLogin)), true
 
 	case "Note.name":
 		if e.complexity.Note.Name == nil {
@@ -328,8 +342,14 @@ extend type Query {
   posts: GetPosts!
 }
 
+input InputLogin {
+    username: String!
+    password: String!
+}
+
 extend type Mutation {
  createPosts(input: [InputPost!]!): String!
+ login(input: InputLogin!): String!
 }`, BuiltIn: false},
 	{Name: "graph/note.graphqls", Input: `type Note {
     name: String!
@@ -405,6 +425,21 @@ func (ec *executionContext) field_Mutation_deleteNote_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.InputLogin
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNInputLogin2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋgraphᚋmodelᚐInputLogin(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -681,6 +716,48 @@ func (ec *executionContext) _Mutation_createPosts(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
 		return ec.resolvers.Mutation().CreatePosts(rctx, args["input"].([]*model1.InputPost))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_login_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.InputLogin))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2224,6 +2301,34 @@ func (ec *executionContext) unmarshalInputInputGps(ctx context.Context, obj inte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputInputLogin(ctx context.Context, obj interface{}) (model.InputLogin, error) {
+	var it model.InputLogin
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			it.Username, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj interface{}) (model1.InputPost, error) {
 	var it model1.InputPost
 	var asMap = obj.(map[string]interface{})
@@ -2418,6 +2523,11 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "createPosts":
 			out.Values[i] = ec._Mutation_createPosts(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "login":
+			out.Values[i] = ec._Mutation_login(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2882,6 +2992,11 @@ func (ec *executionContext) marshalNGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑ
 
 func (ec *executionContext) unmarshalNInputGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputGps(ctx context.Context, v interface{}) (model1.InputGps, error) {
 	res, err := ec.unmarshalInputInputGps(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNInputLogin2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋgraphᚋmodelᚐInputLogin(ctx context.Context, v interface{}) (model.InputLogin, error) {
+	res, err := ec.unmarshalInputInputLogin(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 

@@ -16,4 +16,6 @@ type PostRepositoryInterface interface {
 	CreatePosts([]*model.InputPost) error
 	UpdatePosts([]model.Post) error
 	DeletePosts([]int) error
+
+	GetUserIdByUsernamePassword(userName string, password string) (int,error)
 }

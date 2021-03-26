@@ -28,6 +28,12 @@ extend type Query {
   posts: GetPosts!
 }
 
+input InputLogin {
+    username: String!
+    password: String!
+}
+
 extend type Mutation {
  createPosts(input: [InputPost!]!): String!
+ login(input: InputLogin!): String!
 }
