@@ -2,9 +2,11 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/ipreferwater/graphql-theory/config"
 	"github.com/ipreferwater/graphql-theory/model"
 	log "github.com/sirupsen/logrus"
 )
@@ -82,7 +84,9 @@ func (m MysqlPostRepository) GetUserIdByUsernamePassword(userName string, passwo
 }
 
 func InitMysqlPostRepository() {
-	db, err := sql.Open("mysql", "user:password@tcp(mysql:3306)/doko")
+	c := config.Mysql
+	url := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",c.User, c.Password, c.Host, c.Port, c.Database)
+	db, err := sql.Open("mysql", url)
 	if err != nil {
 		panic(err)
 	}

@@ -14,6 +14,14 @@ func AuthMiddleware() gin.HandlerFunc {
 	fmt.Println("middleware?")
 	return func(c *gin.Context) {
 		clientToken := c.GetHeader("Authorization")
+		url := c.Request.URL.Path
+
+		//TODO THIS IS FOR DEV ONLY
+		if url == "/sandbox" || url == "/login" {
+			c.Next()
+			return
+		}
+
 		if clientToken == "" {
 			c.JSON(http.StatusUnauthorized, gin.H{"status": http.StatusUnauthorized, "message": "Authorization Token is required"})
 			c.Abort()

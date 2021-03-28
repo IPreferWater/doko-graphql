@@ -25,5 +25,5 @@ func CreateToken(userid int) (string, error) {
 
 func VerifyToken(authorisation string) (bool, error) {
 	log.Info(authorisation)
-	return true,nil
+	return true, nil
 }

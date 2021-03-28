@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
@@ -14,30 +16,27 @@ import (
 )
 
 func main() {
+
+	arg := os.Args[1]
+	if arg == "local" {
+		config.SetEnvLocal()
+	}
+
 	config.InitConfig()
+
 	logs.InitLogs()
 	db.InitTODORepo()
 	db.InitMysqlPostRepository()
 
-	//srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
-
 	r := gin.Default()
 	r.Use(auth.AuthMiddleware())
-	//authorized := r.Group("/")
-	//authorized.Use(auth.AuthMiddleware())
-	//{
-		r.POST("/query", graphqlHandler())
-		r.GET("/", playgroundHandler())
-	//}
+	
+	r.GET("/sandbox", playgroundHandler())
+	r.POST("/query", graphqlHandler())
+	r.POST("/login", auth.Login)
 
 	r.Run(":8000")
 	log.Info("graphql ready")
-
-	/*http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
-
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", config.Port)
-	log.Fatal(http.ListenAndServe(":"+config.Port, nil))*/
 }
 
 // Defining the Graphql handler
