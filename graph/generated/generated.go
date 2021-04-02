@@ -48,16 +48,10 @@ type ComplexityRoot struct {
 		Posts func(childComplexity int) int
 	}
 
-	Gps struct {
-		X func(childComplexity int) int
-		Y func(childComplexity int) int
-	}
-
 	Mutation struct {
 		CreateNote  func(childComplexity int, input model.NewNote) int
 		CreatePosts func(childComplexity int, input []*model1.InputPost) int
 		DeleteNote  func(childComplexity int, input int) int
-		Login       func(childComplexity int, input model.InputLogin) int
 	}
 
 	Note struct {
@@ -66,9 +60,10 @@ type ComplexityRoot struct {
 	}
 
 	Post struct {
-		Gps   func(childComplexity int) int
-		Title func(childComplexity int) int
-		Txt   func(childComplexity int) int
+		Latitude  func(childComplexity int) int
+		Longitude func(childComplexity int) int
+		Text      func(childComplexity int) int
+		Title     func(childComplexity int) int
 	}
 
 	Query struct {
@@ -87,7 +82,6 @@ type MutationResolver interface {
 	CreateNote(ctx context.Context, input model.NewNote) (string, error)
 	DeleteNote(ctx context.Context, input int) (string, error)
 	CreatePosts(ctx context.Context, input []*model1.InputPost) (string, error)
-	Login(ctx context.Context, input model.InputLogin) (string, error)
 }
 type QueryResolver interface {
 	Notes(ctx context.Context) ([]*model1.Note, error)
@@ -115,20 +109,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.GetPosts.Posts(childComplexity), true
-
-	case "Gps.x":
-		if e.complexity.Gps.X == nil {
-			break
-		}
-
-		return e.complexity.Gps.X(childComplexity), true
-
-	case "Gps.y":
-		if e.complexity.Gps.Y == nil {
-			break
-		}
-
-		return e.complexity.Gps.Y(childComplexity), true
 
 	case "Mutation.createNote":
 		if e.complexity.Mutation.CreateNote == nil {
@@ -166,18 +146,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.DeleteNote(childComplexity, args["input"].(int)), true
 
-	case "Mutation.login":
-		if e.complexity.Mutation.Login == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_login_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.Login(childComplexity, args["input"].(model.InputLogin)), true
-
 	case "Note.name":
 		if e.complexity.Note.Name == nil {
 			break
@@ -192,12 +160,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Note.Steps(childComplexity), true
 
-	case "Post.gps":
-		if e.complexity.Post.Gps == nil {
+	case "Post.latitude":
+		if e.complexity.Post.Latitude == nil {
 			break
 		}
 
-		return e.complexity.Post.Gps(childComplexity), true
+		return e.complexity.Post.Latitude(childComplexity), true
+
+	case "Post.longitude":
+		if e.complexity.Post.Longitude == nil {
+			break
+		}
+
+		return e.complexity.Post.Longitude(childComplexity), true
+
+	case "Post.text":
+		if e.complexity.Post.Text == nil {
+			break
+		}
+
+		return e.complexity.Post.Text(childComplexity), true
 
 	case "Post.title":
 		if e.complexity.Post.Title == nil {
@@ -205,13 +187,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Post.Title(childComplexity), true
-
-	case "Post.txt":
-		if e.complexity.Post.Txt == nil {
-			break
-		}
-
-		return e.complexity.Post.Txt(childComplexity), true
 
 	case "Query.notes":
 		if e.complexity.Query.Notes == nil {
@@ -312,45 +287,6 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "graph/gps.graphqls", Input: `type GetPosts {
-	posts:    [Post!]!
-}
-
-type Post {
-    title: String!
-    txt: String
-    gps : Gps!
-}
-
-type Gps {
-    x: Float!
-    y: Float!
-}
-
-input InputPost {
-    title: String!
-    txt: String
-    gps: InputGps!
-}
-
-input InputGps {
-    x: Float!
-    y: Float!
-}
-
-extend type Query {
-  posts: GetPosts!
-}
-
-input InputLogin {
-    username: String!
-    password: String!
-}
-
-extend type Mutation {
- createPosts(input: [InputPost!]!): String!
- login(input: InputLogin!): String!
-}`, BuiltIn: false},
 	{Name: "graph/note.graphqls", Input: `type Note {
     name: String!
     steps: [Step!]
@@ -380,6 +316,31 @@ input NewStep {
 type Mutation {
  createNote(input: NewNote!): String!
  deleteNote(input: Int!): String!
+}`, BuiltIn: false},
+	{Name: "graph/post.graphqls", Input: `type GetPosts {
+	posts:    [Post!]!
+}
+
+type Post {
+    title: String!
+    text: String
+    latitude: Float!
+    longitude: Float!
+}
+
+input InputPost {
+    title: String!
+    text: String
+    latitude: Float!
+    longitude: Float!
+}
+
+extend type Query {
+  posts: GetPosts!
+}
+
+extend type Mutation {
+ createPosts(input: [InputPost!]!): String!
 }`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -425,21 +386,6 @@ func (ec *executionContext) field_Mutation_deleteNote_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 model.InputLogin
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNInputLogin2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋgraphᚋmodelᚐInputLogin(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -534,76 +480,6 @@ func (ec *executionContext) _GetPosts_posts(ctx context.Context, field graphql.C
 	res := resTmp.([]model1.Post)
 	fc.Result = res
 	return ec.marshalNPost2ᚕgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐPostᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Gps_x(ctx context.Context, field graphql.CollectedField, obj *model1.Gps) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Gps",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.X, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Gps_y(ctx context.Context, field graphql.CollectedField, obj *model1.Gps) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Gps",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Y, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(float64)
-	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Mutation_createNote(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -732,48 +608,6 @@ func (ec *executionContext) _Mutation_createPosts(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_login_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Login(rctx, args["input"].(model.InputLogin))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Note_name(ctx context.Context, field graphql.CollectedField, obj *model1.Note) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -876,7 +710,7 @@ func (ec *executionContext) _Post_title(ctx context.Context, field graphql.Colle
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Post_txt(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_text(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -894,7 +728,7 @@ func (ec *executionContext) _Post_txt(ctx context.Context, field graphql.Collect
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Txt, nil
+		return obj.Text, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -908,7 +742,7 @@ func (ec *executionContext) _Post_txt(ctx context.Context, field graphql.Collect
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Post_gps(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
+func (ec *executionContext) _Post_latitude(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -926,7 +760,7 @@ func (ec *executionContext) _Post_gps(ctx context.Context, field graphql.Collect
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Gps, nil
+		return obj.Latitude, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -938,9 +772,44 @@ func (ec *executionContext) _Post_gps(ctx context.Context, field graphql.Collect
 		}
 		return graphql.Null
 	}
-	res := resTmp.(model1.Gps)
+	res := resTmp.(float64)
 	fc.Result = res
-	return ec.marshalNGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGps(ctx, field.Selections, res)
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Post_longitude(ctx context.Context, field graphql.CollectedField, obj *model1.Post) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Post",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Longitude, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_notes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2273,62 +2142,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputInputGps(ctx context.Context, obj interface{}) (model1.InputGps, error) {
-	var it model1.InputGps
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "x":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("x"))
-			it.X, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "y":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("y"))
-			it.Y, err = ec.unmarshalNFloat2float64(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputInputLogin(ctx context.Context, obj interface{}) (model.InputLogin, error) {
-	var it model.InputLogin
-	var asMap = obj.(map[string]interface{})
-
-	for k, v := range asMap {
-		switch k {
-		case "username":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
-			it.Username, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "password":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
-			it.Password, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj interface{}) (model1.InputPost, error) {
 	var it model1.InputPost
 	var asMap = obj.(map[string]interface{})
@@ -2343,19 +2156,27 @@ func (ec *executionContext) unmarshalInputInputPost(ctx context.Context, obj int
 			if err != nil {
 				return it, err
 			}
-		case "txt":
+		case "text":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("txt"))
-			it.Txt, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+			it.Text, err = ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "gps":
+		case "latitude":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("gps"))
-			it.Gps, err = ec.unmarshalNInputGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputGps(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("latitude"))
+			it.Latitude, err = ec.unmarshalNFloat2float64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "longitude":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("longitude"))
+			it.Longitude, err = ec.unmarshalNFloat2float64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -2464,38 +2285,6 @@ func (ec *executionContext) _GetPosts(ctx context.Context, sel ast.SelectionSet,
 	return out
 }
 
-var gpsImplementors = []string{"Gps"}
-
-func (ec *executionContext) _Gps(ctx context.Context, sel ast.SelectionSet, obj *model1.Gps) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, gpsImplementors)
-
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Gps")
-		case "x":
-			out.Values[i] = ec._Gps_x(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "y":
-			out.Values[i] = ec._Gps_y(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -2523,11 +2312,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			}
 		case "createPosts":
 			out.Values[i] = ec._Mutation_createPosts(ctx, field)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "login":
-			out.Values[i] = ec._Mutation_login(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2587,10 +2371,15 @@ func (ec *executionContext) _Post(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "txt":
-			out.Values[i] = ec._Post_txt(ctx, field, obj)
-		case "gps":
-			out.Values[i] = ec._Post_gps(ctx, field, obj)
+		case "text":
+			out.Values[i] = ec._Post_text(ctx, field, obj)
+		case "latitude":
+			out.Values[i] = ec._Post_latitude(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "longitude":
+			out.Values[i] = ec._Post_longitude(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2984,20 +2773,6 @@ func (ec *executionContext) marshalNGetPosts2ᚖgithubᚗcomᚋipreferwaterᚋgr
 		return graphql.Null
 	}
 	return ec._GetPosts(ctx, sel, v)
-}
-
-func (ec *executionContext) marshalNGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐGps(ctx context.Context, sel ast.SelectionSet, v model1.Gps) graphql.Marshaler {
-	return ec._Gps(ctx, sel, &v)
-}
-
-func (ec *executionContext) unmarshalNInputGps2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputGps(ctx context.Context, v interface{}) (model1.InputGps, error) {
-	res, err := ec.unmarshalInputInputGps(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNInputLogin2githubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋgraphᚋmodelᚐInputLogin(ctx context.Context, v interface{}) (model.InputLogin, error) {
-	res, err := ec.unmarshalInputInputLogin(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInputPost2ᚕᚖgithubᚗcomᚋipreferwaterᚋgraphqlᚑtheoryᚋmodelᚐInputPostᚄ(ctx context.Context, v interface{}) ([]*model1.InputPost, error) {

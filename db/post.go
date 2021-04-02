@@ -3,6 +3,7 @@ package db
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -38,13 +39,11 @@ func (m MysqlPostRepository) GetPosts() ([]model.Post, error) {
 			return nil, err
 		}
 		scannedPost := model.Post{
-			ID:    id,
-			Title: title,
-			Txt:   &txt,
-			Gps: model.Gps{
-				X: latitude,
-				Y: longitude,
-			},
+			ID:        id,
+			Title:     title,
+			Text:      &txt,
+			Latitude:  latitude,
+			Longitude: longitude,
 		}
 		res = append(res, scannedPost)
 	}
@@ -53,20 +52,33 @@ func (m MysqlPostRepository) GetPosts() ([]model.Post, error) {
 }
 
 func (n MysqlPostRepository) CreatePosts(newPosts []*model.InputPost) error {
+	sqlStr := "INSERT INTO posts(title,txt,latitude,longitude) VALUES "
+	vals := []interface{}{}
 
-	for _, newPost := range newPosts {
-		id := len(allPosts)
-		allPosts = append(allPosts, model.Post{
-			ID:    id,
-			Title: newPost.Title,
-			Txt:   newPost.Txt,
-			Gps: model.Gps{
-				X: newPost.Gps.X,
-				Y: newPost.Gps.Y,
-			},
-		})
+	for _, post := range newPosts {
+		sqlStr += "(?, ?, ?,?),"
+		vals = append(vals, post.Title, post.Text, post.Latitude, post.Longitude)
 	}
-	return nil
+
+	//trim the last ,
+	sqlStr = strings.TrimRight(sqlStr, ",")
+	
+	//prepare the statement
+	stmt, err := n.client.Prepare(sqlStr)
+
+	if err != nil {
+		return err
+	}
+
+	//format all vals at once
+	res, err := stmt.Exec(vals...)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = res.RowsAffected()
+	return err
 }
 
 func (n MysqlPostRepository) UpdatePosts(postsToUpdate []model.Post) error {
@@ -85,7 +97,8 @@ func (m MysqlPostRepository) GetUserIdByUsernamePassword(userName string, passwo
 
 func InitMysqlPostRepository() {
 	c := config.Mysql
-	url := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s",c.User, c.Password, c.Host, c.Port, c.Database)
+	url := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", c.User, c.Password, c.Host, c.Port, c.Database)
+
 	db, err := sql.Open("mysql", url)
 	if err != nil {
 		panic(err)

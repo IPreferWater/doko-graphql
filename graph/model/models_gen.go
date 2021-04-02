@@ -2,11 +2,6 @@
 
 package model
 
-type InputLogin struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 type NewNote struct {
 	Name  string     `json:"name"`
 	Steps []*NewStep `json:"steps"`

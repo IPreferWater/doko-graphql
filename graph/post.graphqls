@@ -1,0 +1,25 @@
+type GetPosts {
+	posts:    [Post!]!
+}
+
+type Post {
+    title: String!
+    text: String
+    latitude: Float!
+    longitude: Float!
+}
+
+input InputPost {
+    title: String!
+    text: String
+    latitude: Float!
+    longitude: Float!
+}
+
+extend type Query {
+  posts: GetPosts!
+}
+
+extend type Mutation {
+ createPosts(input: [InputPost!]!): String!
+}

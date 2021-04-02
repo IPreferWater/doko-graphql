@@ -21,29 +21,31 @@ mutation DeleteNote($id: Int!) {
   deleteNote(input: $id)
 }
 
-query post {posts{posts{title,txt,gps{x,y}}}}
+query post {posts{posts{title,txt,latitude,longitude}}}
 
  mutation CreatePosts($newposts: [InputPost!]!) {
   createPosts(input: $newposts)
 }
 
-query variables 
+query headers
+{
+  "authorization":"Bearer xxx"
+}
 
+query variables 
 {
   "newposts" : [
     {
       "title": "title1",
       "txt": "ola",
-      "gps" : {
-        "x":1.111111,
-        "y":2.222222
-      }
+        "latitude":1.111111,
+        "longitude":2.222222
     },
     {
       "title": "title2",
       "gps" : {
-        "x":3.111111,
-        "y":4.222222
+        "latitude":3.111111,
+        "longitude":4.222222
       }
     }
   ],
@@ -69,10 +71,3 @@ query variables
 
 
 ## TODO
-middleware : 
-- login
-
-graphql : 
-- use model instead of generated
-#used autobind:
-- query login

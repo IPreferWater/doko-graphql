@@ -1,7 +1,7 @@
 package model
 
 type GetPosts struct {
-	Posts    []Post     `json:"posts"`
+	Posts []Post `json:"posts"`
 }
 
 type NewPosts struct {
@@ -9,26 +9,16 @@ type NewPosts struct {
 }
 
 type InputPost struct {
-	Title string    `json:"title"`
-	Txt   *string   `json:"txt"`
-	Gps   InputGps `json:"gps"`
+	Title     string  `json:"title"`
+	Text       *string `json:"txt"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }
-
-type InputGps struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
-}
-
-
 
 type Post struct {
-	ID    int     `json:"id"`
-	Title string  `json:"title"`
-	Txt   *string `json:"txt"`
-	Gps   Gps     `json:"gps"`
-}
-
-type Gps struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	ID        int     `json:"id"`
+	Title     string  `json:"title"`
+	Text       *string `json:"txt"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
 }

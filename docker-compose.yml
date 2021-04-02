@@ -3,13 +3,17 @@ services:
   graphql-theory:
     env_file:
       - ./dev.env
+      - ./mysql-dev.env
     build:
       context: ./
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
     depends_on:
-      - "mysql"
+      mysql:
+        condition: service_healthy
+    volumes: 
+      - './certs:/etc/ssl/certs'
     networks:
       - network-doko
 
@@ -22,6 +26,11 @@ services:
       - ./mysql-init:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
+    healthcheck:
+      test: "/usr/bin/mysql --user=user --password=password --execute \"SHOW DATABASES;\""
+      interval: 10s
+      timeout: 30s
+      retries: 10
     depends_on:
       - "adminer"
     networks:

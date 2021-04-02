@@ -10,6 +10,7 @@ var (
 	Port  string
 	Logs  LogsConfig
 	Mysql MysqlConfig
+	CertFolderPath string
 )
 
 type LogsConfig struct {
@@ -32,6 +33,7 @@ func InitConfig() {
 	Port = os.Getenv("PORT")
 	Logs = initLogsConfig()
 	Mysql = initMysqlConfig()
+	CertFolderPath = os.Getenv("CERT_FOLDER_PATH")
 
 }
 

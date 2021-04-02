@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/99designs/gqlgen/graphql/handler"
@@ -17,9 +18,11 @@ import (
 
 func main() {
 
-	arg := os.Args[1]
-	if arg == "local" {
-		config.SetEnvLocal()
+	if len(os.Args) > 1 {
+		if os.Args[1] == "local" {
+			log.Info("set env for local env")
+			config.SetEnvLocal()
+		}
 	}
 
 	config.InitConfig()
@@ -30,12 +33,16 @@ func main() {
 
 	r := gin.Default()
 	r.Use(auth.AuthMiddleware())
-	
+
 	r.GET("/sandbox", playgroundHandler())
 	r.POST("/query", graphqlHandler())
 	r.POST("/login", auth.Login)
 
-	r.Run(":8000")
+	//https://github.com/gin-gonic/examples/blob/master/http2/main.go
+	serverPemPath := fmt.Sprintf("/%s/server.pem", config.CertFolderPath)
+	serverKeyPath := fmt.Sprintf("/%s/server.key", config.CertFolderPath)
+	r.RunTLS(":8000", serverPemPath, serverKeyPath)
+	//r.Run(":8000")
 	log.Info("graphql ready")
 }
 
