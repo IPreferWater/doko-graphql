@@ -1,6 +1,6 @@
 version: '3'
 services:
-  graphql-theory:
+  doko-graphql:
     env_file:
       - ./dev.env
       - ./mysql-dev.env

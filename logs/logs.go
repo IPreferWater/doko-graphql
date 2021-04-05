@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/ipreferwater/graphql-theory/config"
+	"github.com/ipreferwater/doko-graphql/config"
 	"github.com/mattn/go-colorable"
 	"github.com/sirupsen/logrus"
 	"github.com/snowzach/rotatefilehook"

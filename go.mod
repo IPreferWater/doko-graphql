@@ -1,4 +1,4 @@
-module github.com/ipreferwater/graphql-theory
+module github.com/ipreferwater/doko-graphql
 
 go 1.15
 

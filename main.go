@@ -7,12 +7,12 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/ipreferwater/graphql-theory/auth"
-	"github.com/ipreferwater/graphql-theory/config"
-	"github.com/ipreferwater/graphql-theory/db"
-	"github.com/ipreferwater/graphql-theory/graph"
-	"github.com/ipreferwater/graphql-theory/graph/generated"
-	"github.com/ipreferwater/graphql-theory/logs"
+	"github.com/ipreferwater/doko-graphql/auth"
+	"github.com/ipreferwater/doko-graphql/config"
+	"github.com/ipreferwater/doko-graphql/db"
+	"github.com/ipreferwater/doko-graphql/graph"
+	"github.com/ipreferwater/doko-graphql/graph/generated"
+	"github.com/ipreferwater/doko-graphql/logs"
 	log "github.com/sirupsen/logrus"
 )
 

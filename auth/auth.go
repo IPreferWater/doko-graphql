@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/ipreferwater/graphql-theory/db"
+	"github.com/ipreferwater/doko-graphql/db"
 )
 
 type inputLogin struct {

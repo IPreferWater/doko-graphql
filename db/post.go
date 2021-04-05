@@ -7,8 +7,8 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/ipreferwater/graphql-theory/config"
-	"github.com/ipreferwater/graphql-theory/model"
+	"github.com/ipreferwater/doko-graphql/config"
+	"github.com/ipreferwater/doko-graphql/model"
 	log "github.com/sirupsen/logrus"
 )
 

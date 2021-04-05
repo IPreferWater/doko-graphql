@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/ipreferwater/graphql-theory/model"
+	"github.com/ipreferwater/doko-graphql/model"
 )
 
 type NoteRepositoryInterface interface {

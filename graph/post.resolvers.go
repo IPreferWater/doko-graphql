@@ -6,8 +6,8 @@ package graph
 import (
 	"context"
 
-	"github.com/ipreferwater/graphql-theory/db"
-	"github.com/ipreferwater/graphql-theory/model"
+	"github.com/ipreferwater/doko-graphql/db"
+	"github.com/ipreferwater/doko-graphql/model"
 )
 
 func (r *mutationResolver) CreatePosts(ctx context.Context, input []*model.InputPost) (string, error) {

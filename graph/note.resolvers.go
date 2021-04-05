@@ -6,10 +6,10 @@ package graph
 import (
 	"context"
 
-	"github.com/ipreferwater/graphql-theory/db"
-	"github.com/ipreferwater/graphql-theory/graph/generated"
-	"github.com/ipreferwater/graphql-theory/graph/model"
-	model1 "github.com/ipreferwater/graphql-theory/model"
+	"github.com/ipreferwater/doko-graphql/db"
+	"github.com/ipreferwater/doko-graphql/graph/generated"
+	"github.com/ipreferwater/doko-graphql/graph/model"
+	model1 "github.com/ipreferwater/doko-graphql/model"
 	log "github.com/sirupsen/logrus"
 )
 

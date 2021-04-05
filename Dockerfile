@@ -4,8 +4,8 @@ FROM golang:${GO_VERSION}-alpine AS builder
 
 RUN apk update && apk add alpine-sdk git && rm -rf /var/cache/apk/*
 
-RUN mkdir -p /graphql-theory
-WORKDIR /graphql-theory
+RUN mkdir -p /doko-graphql
+WORKDIR /doko-graphql
 
 COPY go.mod .
 COPY go.sum .
