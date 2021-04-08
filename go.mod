@@ -1,3 +1,4 @@
+// + heroku goVersion go1.15
 module github.com/ipreferwater/doko-graphql
 
 go 1.15
