@@ -1,2 +1,2 @@
 [metadata.heroku]
-  root-package = "github.com/ipreferwater/doko-graphql"
+  root-package = "doko-graphql"
