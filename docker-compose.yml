@@ -9,11 +9,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    depends_on:
-      mysql:
-        condition: service_healthy
+    #depends_on:
+    #  mysql:
+    #    condition: service_healthy
+    depends_on: 
+      - firestore
     volumes: 
       - './certs:/etc/ssl/certs'
+      - './key.json:/etc/ssl/key.json'
     networks:
       - network-doko
 
@@ -40,6 +43,16 @@ services:
     image: adminer
     ports:
       - 8001:8080
+    networks:
+      - network-doko
+  
+  firestore:
+    image: mtlynch/firestore-emulator
+    ports:
+      - "8200:8200"
+    environment:
+      - FIRESTORE_PROJECT_ID=dummy-project-id
+      - PORT=8200
     networks:
       - network-doko
 

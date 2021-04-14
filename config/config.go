@@ -78,7 +78,8 @@ func strEnvToInt(envString string) int {
 	sValue := os.Getenv(envString)
 	i, err := strconv.Atoi(sValue)
 	if err != nil {
-		panic(fmt.Errorf("can't parse env '%s' with value '%s' %s", envString, sValue, err))
+		fmt.Printf("can't parse env '%s' with value '%s' %s\n", envString, sValue, err)
+		return 0
 	}
 	return i
 }

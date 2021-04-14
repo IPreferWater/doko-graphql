@@ -29,7 +29,8 @@ func main() {
 
 	logs.InitLogs()
 	db.InitTODORepo()
-	db.InitMysqlPostRepository()
+	//db.InitMysqlPostRepository()
+	db.InitFirestorePostRepository()
 
 	r := gin.Default()
 	r.Use(auth.AuthMiddleware())
