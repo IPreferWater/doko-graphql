@@ -4,6 +4,11 @@ import (
 	"github.com/ipreferwater/doko-graphql/model"
 )
 
+
+var (
+	PostRepository PostRepositoryInterface
+)
+
 type NoteRepositoryInterface interface {
 	GetNotes() ([]*model.Note, error)
 	CreateNote(model.Note) error

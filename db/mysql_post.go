@@ -1,21 +1,21 @@
 package db
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"database/sql"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/ipreferwater/doko-graphql/config"
 	"github.com/ipreferwater/doko-graphql/model"
 	log "github.com/sirupsen/logrus"
 )
 
-var (
-	PostRepository PostRepositoryInterface
-	allPosts       []model.Post
-)
 
 type MysqlPostRepository struct {
 	client *sql.DB
@@ -62,7 +62,7 @@ func (n MysqlPostRepository) CreatePosts(newPosts []*model.InputPost) error {
 
 	//trim the last ,
 	sqlStr = strings.TrimRight(sqlStr, ",")
-	
+
 	//prepare the statement
 	stmt, err := n.client.Prepare(sqlStr)
 
@@ -96,10 +96,32 @@ func (m MysqlPostRepository) GetUserIdByUsernamePassword(userName string, passwo
 }
 
 func InitMysqlPostRepository() {
-	c := config.Mysql
-	url := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", c.User, c.Password, c.Host, c.Port, c.Database)
 
-	db, err := sql.Open("mysql", url)
+	rootCertPool := x509.NewCertPool()
+	mysqlServerCaPath := fmt.Sprintf("/%s/gcp-dev-mysql-server-ca.pem", config.CertFolderPath)
+	pem, err := ioutil.ReadFile(mysqlServerCaPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if ok := rootCertPool.AppendCertsFromPEM(pem); !ok {
+		log.Fatal("Failed to append PEM.")
+	}
+	clientCert := make([]tls.Certificate, 0, 1)
+	mysqlClientCertPath := fmt.Sprintf("/%s/gcp-dev-mysql-client-cert.pem", config.CertFolderPath)
+	mysqlClientKeyPath := fmt.Sprintf("/%s/gcp-dev-mysql-client-key.pem", config.CertFolderPath)
+	certs, err := tls.LoadX509KeyPair(mysqlClientCertPath, mysqlClientKeyPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	clientCert = append(clientCert, certs)
+
+	mysql.RegisterTLSConfig("custom", &tls.Config{
+		RootCAs:      rootCertPool,
+		Certificates: clientCert,
+		ServerName:   config.Mysql.Host,
+	})
+
+	db, err := sql.Open("mysql", "doko-mysql-dev@DOKOgraphql2226!!(doko-graphql:europe-west1:doko-mysql-dev)/doko?tls=custom")
 	if err != nil {
 		panic(err)
 	}
@@ -117,4 +139,12 @@ func InitMysqlPostRepository() {
 	db.SetMaxIdleConns(10)
 
 	PostRepository = &MysqlPostRepository{client: db}
+}
+
+func getUrl() string {
+	c := config.Mysql
+	if c.Port == 0 {
+		return fmt.Sprintf("%s:%s@unix(%s)/%s?parseTime=true", c.User, c.Password, c.Host, c.Database)
+	}
+	return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", c.User, c.Password, c.Host, c.Port, c.Database)
 }
