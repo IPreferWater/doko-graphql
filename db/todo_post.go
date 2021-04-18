@@ -1,6 +1,8 @@
 package db
 
 import (
+	"fmt"
+
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/ipreferwater/doko-graphql/model"
 )
@@ -11,24 +13,30 @@ I would like to test features but I'm currently stuck on connecting a GCP hosted
 to bypass this I created this dummy repo
 */
 type TodoPostRepository struct {
-	posts []model.Post
+	
 }
 
+var (
+	posts []model.Post
+)
+
 func (r TodoPostRepository) GetPosts() ([]model.Post, error) {
-	return r.posts, nil
+	return posts, nil
 }
 
 func (r TodoPostRepository) CreatePosts(newPosts []*model.InputPost) error {
 	for _, inputPost := range newPosts {
 
+		fmt.Println("create a post")
 		newPost := model.Post{
-			ID:        len(r.posts),
+			ID:        len(posts),
 			Title:     inputPost.Title,
 			Text:      inputPost.Text,
 			Latitude:  inputPost.Latitude,
 			Longitude: inputPost.Longitude,
 		}
-		r.posts = append(r.posts, newPost)
+		posts = append(posts, newPost)
+		fmt.Printf("new len %d",len(posts))
 	}
 	return nil
 }
@@ -45,5 +53,5 @@ func (m TodoPostRepository) GetUserIdByUsernamePassword(userName string, passwor
 }
 
 func InitTodoPostRepository() {
-	PostRepository = &TodoPostRepository{posts: []model.Post{}}
+	PostRepository = &TodoPostRepository{}
 }
