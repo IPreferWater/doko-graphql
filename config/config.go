@@ -32,7 +32,7 @@ type MysqlConfig struct {
 func InitConfig() {
 	Port = os.Getenv("PORT")
 	Logs = initLogsConfig()
-	Mysql = initMysqlConfig()
+	//Mysql = initMysqlConfig()
 	CertFolderPath = os.Getenv("CERT_FOLDER_PATH")
 
 }

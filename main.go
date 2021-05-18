@@ -14,10 +14,12 @@ import (
 	"github.com/ipreferwater/doko-graphql/graph/generated"
 	"github.com/ipreferwater/doko-graphql/logs"
 	log "github.com/sirupsen/logrus"
+	"github.com/unrolled/secure"
 )
 
 func main() {
 
+	//time.Sleep(10* time.Minute)
 	if len(os.Args) > 1 {
 		if os.Args[1] == "local" {
 			log.Info("set env for local env")
@@ -28,12 +30,13 @@ func main() {
 	config.InitConfig()
 
 	logs.InitLogs()
-	db.InitTODORepo()
+	//db.InitTODORepo()
 	db.InitTodoPostRepository()
 	//db.InitMysqlPostRepository()
 	//db.InitFirestorePostRepository()
 
 	r := gin.Default()
+	r.Use(TlsHandler())
 	r.Use(auth.AuthMiddleware())
 
 	r.GET("/sandbox", playgroundHandler())
@@ -43,9 +46,28 @@ func main() {
 	//https://github.com/gin-gonic/examples/blob/master/http2/main.go
 	serverPemPath := fmt.Sprintf("/%s/server.pem", config.CertFolderPath)
 	serverKeyPath := fmt.Sprintf("/%s/server.key", config.CertFolderPath)
-	r.RunTLS(":8000", serverPemPath, serverKeyPath)
+	if err := r.RunTLS(":8000", serverPemPath, serverKeyPath); err != nil {
+		panic(err)
+	}
 	//r.Run(":8000")
 	log.Info("graphql ready")
+}
+
+func TlsHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		secureMiddleware := secure.New(secure.Options{
+			SSLRedirect: true,
+			SSLHost:     "localhost:8888",
+		})
+		err := secureMiddleware.Process(c.Writer, c.Request)
+
+		// If there was an error, do not continue.
+		if err != nil {
+			return
+		}
+
+		c.Next()
+	}
 }
 
 // Defining the Graphql handler

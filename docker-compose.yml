@@ -15,7 +15,7 @@ services:
     #depends_on: 
     #  - firestore
     volumes: 
-      - './certs:/etc/ssl/certs'
+     # - './certs:/etc/ssl/certs'
       - './key.json:/etc/ssl/key.json'
     networks:
       - network-doko
