@@ -31,9 +31,7 @@ func main() {
 
 	logs.InitLogs()
 	//db.InitTODORepo()
-	db.InitTodoPostRepository()
-	//db.InitMysqlPostRepository()
-	//db.InitFirestorePostRepository()
+	db.InitPostgresRepo()
 
 	r := gin.Default()
 	r.Use(TlsHandler())
@@ -57,7 +55,7 @@ func TlsHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		secureMiddleware := secure.New(secure.Options{
 			SSLRedirect: true,
-			SSLHost:     "localhost:8888",
+			SSLHost:     "ssl.example.com",
 		})
 		err := secureMiddleware.Process(c.Writer, c.Request)
 

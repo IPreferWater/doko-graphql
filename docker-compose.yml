@@ -39,22 +39,32 @@ services:
     networks:
       - network-doko
 
+  postgres:
+    image: postgres:10.16
+    container_name: 'postgres'
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: "trust"
+      POSTGRES_USER: "ipreferwater"
+      POSTGRES_DB: "doko"
+    volumes:
+      - postgres-volume-container:/var/lib/mysql
+      #- ./db/init-postgres.sh:/docker-entrypoint-initdb.d/init-user-db.sh
+    ports:
+      - 5432:5432
+    depends_on:
+      - "adminer"
+    networks:
+      - network-doko
+
   adminer:
     image: adminer
     ports:
       - 8001:8080
     networks:
       - network-doko
-  
-  firestore:
-    image: mtlynch/firestore-emulator
-    ports:
-      - "8200:8200"
-    environment:
-      - FIRESTORE_PROJECT_ID=dummy-project-id
-      - PORT=8200
-    networks:
-      - network-doko
 
 networks:
   network-doko:
+
+volumes:
+  postgres-volume-container:

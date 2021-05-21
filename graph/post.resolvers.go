@@ -11,7 +11,10 @@ import (
 )
 
 func (r *mutationResolver) CreatePosts(ctx context.Context, input []*model.InputPost) (string, error) {
-	db.PostRepository.CreatePosts(input)
+	err := db.PostRepository.CreatePosts(input)
+	if err != nil {
+		return "error", err
+	}
 	return "ok", nil
 }
 

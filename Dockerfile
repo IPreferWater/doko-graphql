@@ -17,13 +17,13 @@ RUN openssl genrsa -out /etc/ssl/certs/server.key 2048
 RUN openssl req -new -x509 -key /etc/ssl/certs/server.key \
     -subj "/C=FR/ST=Nord/L=Lille/O=Dis/CN=www.example.com" \
      -out /etc/ssl/certs/server.pem -days 365
-     
+
 RUN go mod download
 
 COPY . .
 RUN go build -o ./app ./main.go
 
-EXPOSE 8080
+EXPOSE 8000
 
 #COPY config.json .
 ENTRYPOINT ["./app"]
